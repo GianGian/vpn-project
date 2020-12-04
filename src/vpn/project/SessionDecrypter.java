@@ -8,9 +8,13 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 public class SessionDecrypter {
+    private byte[] KeyBytes;
+    private byte[] IVBytes;
     private Cipher cipher;
 
     public SessionDecrypter(byte[] keybytes, byte[] ivbytes)throws NoSuchAlgorithmException,NoSuchPaddingException,InvalidKeyException,InvalidAlgorithmParameterException{
+        this.KeyBytes=keybytes;
+        this.IVBytes=ivbytes;
         this.cipher = Cipher.getInstance("AES/CTR/NOPadding");
         IvParameterSpec ivspec = new IvParameterSpec(ivbytes);
         SecretKey myKey= new SecretKeySpec(keybytes,"AES"); 

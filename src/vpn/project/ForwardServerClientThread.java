@@ -37,21 +37,23 @@ public class ForwardServerClientThread extends Thread
     private int mServerPort;
     private String mServerHost;
     
-    private SessionEncrypter ServerSessEncrypt;
-    private SessionDecrypter ServerSessDecrypt;
+    private SessionEncrypter SessEncrypt;
+    private SessionDecrypter SessDecrypt;
+    boolean id;
 
     /**
      * Creates a client thread for handling clients of NakovForwardServer.
      * Wait for client to connect on client listening socket.
      * A server socket is created later by run() method.
      */
-    public ForwardServerClientThread(ServerSocket listensocket, String serverhost, int serverport) throws IOException
+    public ForwardServerClientThread(boolean id, ServerSocket listensocket, String serverhost, int serverport) throws IOException
     {
         mListenSocket = listensocket;
         mServerPort = serverport;
         mServerHost = serverhost;
-        this.ServerSessEncrypt = ClientHandshake.getSessionEncrypter();
-        this.ServerSessDecrypt = ClientHandshake.getSessionDecrypter();
+        this.SessEncrypt = ServerHandshake.getSessionEncrypter();
+        this.SessDecrypt = ServerHandshake.getSessionDecrypter();
+        id=id;
     }
 
     public ServerSocket getListenSocket() {
@@ -72,6 +74,8 @@ public class ForwardServerClientThread extends Thread
  
             // Wait for incoming connection on listen socket
             System.out.println("server" + mServerPort);
+            System.out.println("server" + mServerHost);
+            System.out.println("server" + mListenSocket);
             mClientSocket = mListenSocket.accept();
             mClientHostPort = mClientSocket.getInetAddress().getHostName() + ":" + mClientSocket.getPort();
             Logger.log("Accepted from " + mClientHostPort + " on " + mListenSocket.getLocalPort());
@@ -91,22 +95,29 @@ public class ForwardServerClientThread extends Thread
             InputStream serverIn = mServerSocket.getInputStream();
             OutputStream serverOut = mServerSocket.getOutputStream();
             
-            if(getListenSocket() == null){
-                if(ServerSessEncrypt != null) {
-                    serverOut = ServerSessEncrypt.openCipherOutputStream(serverOut);
+           
+          
+            //System.out.println("crypto" + getListenSocket());   
+            if(id){               
+                if(SessEncrypt != null) {
+                    System.out.println("serverout" + serverOut.toString());
+                    serverOut = SessEncrypt.openCipherOutputStream(serverOut);
                 }
-                if(ServerSessDecrypt != null) {
-                    serverIn = ServerSessDecrypt.openCipherInputStream(serverIn);
+                if(SessDecrypt != null) {
+                    System.out.println("serverin" + serverIn.toString());
+                    serverIn = SessDecrypt.openCipherInputStream(serverIn);
                 }
             } else {
-                if(ServerSessEncrypt != null) {
-                    clientOut = ServerSessEncrypt.openCipherOutputStream(clientOut);
+                if(SessEncrypt != null) {
+                    System.out.println("clientout" + clientOut.toString());
+                    clientOut = SessEncrypt.openCipherOutputStream(clientOut);
                 }
-                if(ServerSessDecrypt != null) {
-                    clientIn = ServerSessDecrypt.openCipherInputStream(clientIn);
+                if(SessDecrypt != null) {
+                    System.out.println("clientin" + clientIn.toString());
+                    clientIn = SessDecrypt.openCipherInputStream(clientIn);
                 }
             }
-
+         
             mServerHostPort = mServerHost + ":" + mServerPort;
             Logger.log("TCP Forwarding  " + mClientHostPort + " <--> " + mServerHostPort + "  started.");
  

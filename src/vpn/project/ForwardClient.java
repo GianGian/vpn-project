@@ -108,8 +108,10 @@ public class ForwardClient
          * Set up port forwarding between proxy port and session host/port
          * that was learned from the handshake. 
          */
+        System.out.println("ingrtesso thread" + proxySocket);
+        System.out.println("ingrtesso thread2" + clientHandshake.sessionPort);
         ForwardServerClientThread forwardThread =
-            new ForwardServerClientThread(proxySocket,
+            new ForwardServerClientThread(true,proxySocket,
                                           clientHandshake.sessionHost, clientHandshake.sessionPort);
         System.out.println("debug3");
         /* 

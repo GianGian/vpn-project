@@ -48,8 +48,9 @@ public class ForwardServer
         serverHandshake.VerifyForward(handshakeSocket);
         //handshakeListenSocket = new ServerSocket(0,13,InetAddress.getLocalHost());
         //serverHandshake.Session(handshakeSocket, InetAddress.getLocalHost().getHostAddress(), Integer.toString(handshakeListenSocket.getLocalPort()));
+        System.out.println("sessionsocketbefore" + serverHandshake.sessionSocket);
         serverHandshake.sessionSocket = new ServerSocket(0,13,InetAddress.getLocalHost());
-        //System.out.println("sessionsocket" + serverHandshake.sessionSocket);
+        System.out.println("sessionsocketafter" + serverHandshake.sessionSocket);
         serverHandshake.Session(handshakeSocket, InetAddress.getLocalHost().getHostAddress(), Integer.toString(serverHandshake.sessionSocket.getLocalPort()));
         
         //==
@@ -70,7 +71,7 @@ public class ForwardServer
  
         // Bind server on given TCP port
         int port = Integer.parseInt(arguments.get("handshakeport"));
-        ServerSocket handshakeListenSocket;
+        //ServerSocket handshakeListenSocket;
         try {
             handshakeListenSocket = new ServerSocket(port);
         } catch (IOException ioex) {
@@ -96,7 +97,7 @@ public class ForwardServer
              */
 
             ForwardServerClientThread forwardThread;
-            forwardThread = new ForwardServerClientThread(serverHandshake.sessionSocket,
+            forwardThread = new ForwardServerClientThread(false,serverHandshake.sessionSocket,
                                                           serverHandshake.targetHost, serverHandshake.targetPort);
             //System.out.println("debugbis" + serverHandshake.targetPort);
             forwardThread.start();

@@ -12,6 +12,7 @@ import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Arrays;
 import java.util.Base64;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -26,15 +27,15 @@ public class ClientHandshake {
     
     /* Session host/port  */
     public static String sessionHost = "localhost";
-    public static int sessionPort = 12345; 
+    public static int sessionPort; //=12345
     public static String ClientCertificate="client.pem";
 
     /* Security parameters key/iv should also go here. Fill in! */
     public static X509Certificate Servercertificate;
     public static SessionDecrypter SessionDecrypter;
     public static SessionEncrypter SessionEncrypter;
-    public static String SessionHost;
-    public static int SessionPort;
+    //public static String SessionHost;
+    //public static int SessionPort;
 
 
     /**
@@ -74,6 +75,7 @@ public class ClientHandshake {
         HandMessage.putParameter("MessageType", "Forward");
         HandMessage.putParameter("TargetHost", TargetHost);
         HandMessage.putParameter("TargetPort", TargetPort);
+        System.out.println("target host and port" + TargetHost + TargetPort);
         HandMessage.send(socket);
         Logger.log("Portforwarding Succeeded");
     }
@@ -84,26 +86,27 @@ public class ClientHandshake {
         if(HandMessage.getParameter("MessageType").equals("Session")){
             String sKey = HandMessage.getParameter("SessionKey");
             String sIV = HandMessage.getParameter("SessionIV");
-            SessionHost = HandMessage.getParameter("SessionHost");
-            SessionPort = Integer.parseInt(HandMessage.getParameter("SessionPort"));
+            sessionHost = HandMessage.getParameter("SessionHost");
+            sessionPort = Integer.parseInt(HandMessage.getParameter("SessionPort"));
+            System.out.println("verify session"+sessionPort);
             byte[] SessKeyDec = HandshakeCrypto.decrypt(Base64.getDecoder().decode(sKey),HandshakeCrypto.getPrivateKeyFromKeyFile(PrivKey));
             byte[] SessIVDec = HandshakeCrypto.decrypt(Base64.getDecoder().decode(sIV),HandshakeCrypto.getPrivateKeyFromKeyFile(PrivKey));
 
             SessionEncrypter = new SessionEncrypter(SessKeyDec, SessIVDec);
             SessionDecrypter = new SessionDecrypter(SessKeyDec,SessIVDec);
-            // System.out.println(new SessionKey((SessKeyDec)).encodeKey());
-            // System.out.println(Base64.getEncoder().encodeToString(new IvParameterSpec(SessIVDec).getIV()));
+             System.out.println("chiave in byte"+ Arrays.toString(SessKeyDec));
+             System.out.println("IV in byte"+ Arrays.toString(SessIVDec));
         } else{
             socket.close();
         }
     }
     
     public static String getSessionHost() { 
-        return SessionHost; 
+        return sessionHost; 
     }
 
     public static int getSessionPort() { 
-        return SessionPort; 
+        return sessionPort; 
     }
     
     public static SessionDecrypter getSessionDecrypter() { return SessionDecrypter; }
