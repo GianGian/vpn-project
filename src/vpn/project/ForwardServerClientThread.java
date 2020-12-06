@@ -39,6 +39,8 @@ public class ForwardServerClientThread extends Thread
     
     private SessionEncrypter SessEncrypt;
     private SessionDecrypter SessDecrypt;
+    private SessionEncrypter SessEncrypt1;
+    private SessionDecrypter SessDecrypt1;
     boolean id;
 
     /**
@@ -46,14 +48,19 @@ public class ForwardServerClientThread extends Thread
      * Wait for client to connect on client listening socket.
      * A server socket is created later by run() method.
      */
-    public ForwardServerClientThread(boolean id, ServerSocket listensocket, String serverhost, int serverport) throws IOException
+    public ForwardServerClientThread(boolean id1, ServerSocket listensocket, String serverhost, int serverport) throws IOException
     {
         mListenSocket = listensocket;
         mServerPort = serverport;
         mServerHost = serverhost;
+        if(id1){
+        this.SessEncrypt = ClientHandshake.getSessionEncrypter();
+        this.SessDecrypt = ClientHandshake.getSessionDecrypter();
+        }else{
         this.SessEncrypt = ServerHandshake.getSessionEncrypter();
         this.SessDecrypt = ServerHandshake.getSessionDecrypter();
-        id=id;
+        }
+        id=id1;
     }
 
     public ServerSocket getListenSocket() {
@@ -73,15 +80,16 @@ public class ForwardServerClientThread extends Thread
         try {
  
             // Wait for incoming connection on listen socket
-            System.out.println("server" + mServerPort);
-            System.out.println("server" + mServerHost);
-            System.out.println("server" + mListenSocket);
+            //System.out.println("server" + mServerPort);
+           // System.out.println("server" + mServerHost);
+           // System.out.println("server" + mListenSocket);
             mClientSocket = mListenSocket.accept();
             mClientHostPort = mClientSocket.getInetAddress().getHostName() + ":" + mClientSocket.getPort();
             Logger.log("Accepted from " + mClientHostPort + " on " + mListenSocket.getLocalPort());
                
             try {
                 mServerSocket = new Socket(mServerHost, mServerPort);
+                System.out.println(mServerSocket);
             } catch (Exception e) {
                 System.out.println("Connection failed to " + mServerHost + ":" + mServerPort);
                 e.printStackTrace(); 
@@ -98,24 +106,23 @@ public class ForwardServerClientThread extends Thread
            
           
             //System.out.println("crypto" + getListenSocket());   
-            if(id){               
-                if(SessEncrypt != null) {
-                    System.out.println("serverout" + serverOut.toString());
+            System.out.println("aaa"+this.id);
+            if(id){ 
+                System.out.println("bbb");
+               // if(SessEncrypt != null) {
                     serverOut = SessEncrypt.openCipherOutputStream(serverOut);
-                }
-                if(SessDecrypt != null) {
-                    System.out.println("serverin" + serverIn.toString());
+                //}
+                //if(SessDecrypt != null) {
                     serverIn = SessDecrypt.openCipherInputStream(serverIn);
-                }
+                //}
             } else {
-                if(SessEncrypt != null) {
-                    System.out.println("clientout" + clientOut.toString());
+                System.out.println("ccc");
+               // if(SessEncrypt != null) {
                     clientOut = SessEncrypt.openCipherOutputStream(clientOut);
-                }
-                if(SessDecrypt != null) {
-                    System.out.println("clientin" + clientIn.toString());
+                //}
+                //if(SessDecrypt != null) {
                     clientIn = SessDecrypt.openCipherInputStream(clientIn);
-                }
+                //}
             }
          
             mServerHostPort = mServerHost + ":" + mServerPort;

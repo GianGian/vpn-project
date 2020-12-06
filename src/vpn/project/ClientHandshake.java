@@ -27,15 +27,15 @@ public class ClientHandshake {
     
     /* Session host/port  */
     public static String sessionHost = "localhost";
-    public static int sessionPort; //=12345
+    public static int sessionPort=12345;
     public static String ClientCertificate="client.pem";
 
     /* Security parameters key/iv should also go here. Fill in! */
     public static X509Certificate Servercertificate;
     public static SessionDecrypter SessionDecrypter;
     public static SessionEncrypter SessionEncrypter;
-    //public static String SessionHost;
-    //public static int SessionPort;
+    public static String SessionHost;
+    public static int SessionPort;
 
 
     /**

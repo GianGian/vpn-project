@@ -59,8 +59,8 @@ public class ForwardClient
         clientHandshake.VerifySession(handshakeSocket, arguments.get("key"));
         handshakeSocket.close();
         System.out.println("handshake ok");
-        clientHandshake.sessionHost = ClientHandshake.getSessionHost();
-        clientHandshake.sessionPort = ClientHandshake.getSessionPort();
+        //clientHandshake.sessionHost = ClientHandshake.getSessionHost();
+        //clientHandshake.sessionPort = ClientHandshake.getSessionPort();
         System.out.println("client test" +clientHandshake.sessionPort);
     }
 
@@ -109,14 +109,15 @@ public class ForwardClient
          * that was learned from the handshake. 
          */
         System.out.println("ingrtesso thread" + proxySocket);
-        System.out.println("ingrtesso thread2" + clientHandshake.sessionPort);
-        ForwardServerClientThread forwardThread =
-            new ForwardServerClientThread(true,proxySocket,
+        System.out.println("ingrtesso thread" + clientHandshake.sessionHost);
+        System.out.println("ingrtesso thread" + clientHandshake.sessionPort);
+        ForwardServerClientThread forwardThread;
+            forwardThread = new ForwardServerClientThread(true,proxySocket,
                                           clientHandshake.sessionHost, clientHandshake.sessionPort);
-        System.out.println("debug3");
         /* 
          * Launch the fowarder 
          */
+        System.out.println(forwardThread.id);
         forwardThread.start();
     }
 
