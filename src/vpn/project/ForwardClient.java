@@ -51,7 +51,7 @@ public class ForwardClient
      */
 
     private static void doHandshake(Socket handshakeSocket) throws IOException, CertificateException, NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException, InvalidKeySpecException, IllegalBlockSizeException, NoSuchPaddingException, BadPaddingException, InvalidAlgorithmParameterException {
-        clientHandshake = new ClientHandshake(handshakeSocket);
+        clientHandshake = new ClientHandshake(handshakeSocket,arguments.get("usercert"));
         clientHandshake.VerifyServerHello(handshakeSocket,arguments.get("cacert"));
         clientHandshake.Forward(handshakeSocket,arguments.get("targethost"),arguments.get("targetport"));
         clientHandshake.VerifySession(handshakeSocket, arguments.get("key"));

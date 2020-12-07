@@ -34,10 +34,12 @@ public class ServerHandshake {
     public static int sessionPort;    
 
     /* The final destination -- simulate handshake with constants */
-    public static String targetHost = "localhost";
-    public static int targetPort = 6789;
-    public static String ServerCertificate="server.pem";
-
+    //public static String targetHost = "localhost";
+    //public static int targetPort = 6789;
+    //public static String ServerCertificate="server.pem";
+    public static String targetHost;
+    public static int targetPort;
+    public static String ServerCertificate;
     /* Security parameters key/iv should also go here. Fill in! */
      public static X509Certificate Clientcertificate;
      public static SessionDecrypter SessionDecrypter;
@@ -48,9 +50,10 @@ public class ServerHandshake {
      * Here, we simulate the handshake by just creating a new socket
      * with a preassigned port number for the session.
      */ 
-    public ServerHandshake(Socket handshakeSocket) throws IOException, CertificateException {
+    public ServerHandshake(Socket handshakeSocket, String user) throws IOException, CertificateException {
         HandshakeMessage HandMessage = new HandshakeMessage();
         HandMessage.putParameter("MessageType", "ServerHello");
+        String ServerCertificate = user;
         HandMessage.putParameter("Certificate", Base64.getEncoder().encodeToString(VerifyCertificate.getCertificate(ServerCertificate).getEncoded()));
         HandMessage.send(handshakeSocket);
     }
@@ -88,19 +91,15 @@ public class ServerHandshake {
     }
     
     public static void Session(Socket socket, String serverHost, String serverPort) throws IOException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException, BadPaddingException, IllegalBlockSizeException {
-
         HandshakeMessage HandMessage = new HandshakeMessage();
         HandMessage.putParameter("MessageType", "Session");
-        SessionKey Skey = new SessionKey(128);
-        IvParameterSpec sIV = new IvParameterSpec(new SecureRandom().generateSeed(16));
-
+        SessionKey key = new SessionKey(128);
+        IvParameterSpec IV = new IvParameterSpec(new SecureRandom().generateSeed(16));
         PublicKey PublicUser = Clientcertificate.getPublicKey();
-
-        HandMessage.putParameter("SessionKey", Base64.getEncoder().encodeToString(HandshakeCrypto.encrypt(Skey.getKeyBytes(), PublicUser)));
-        HandMessage.putParameter("SessionIV", Base64.getEncoder().encodeToString(HandshakeCrypto.encrypt(sIV.getIV(), PublicUser)));
-
-        SessionEncrypter = new SessionEncrypter(Skey.getKeyBytes(), sIV.getIV());
-        SessionDecrypter = new SessionDecrypter(Skey.getKeyBytes(), sIV.getIV());
+        HandMessage.putParameter("SessionKey", Base64.getEncoder().encodeToString(HandshakeCrypto.encrypt(key.getKeyBytes(), PublicUser)));
+        HandMessage.putParameter("SessionIV", Base64.getEncoder().encodeToString(HandshakeCrypto.encrypt(IV.getIV(), PublicUser)));
+        SessionEncrypter = new SessionEncrypter(key.getKeyBytes(), IV.getIV());
+        SessionDecrypter = new SessionDecrypter(key.getKeyBytes(), IV.getIV());
         //System.out.println("chiave in byte" + Arrays.toString(Skey.getKeyBytes()));
         //System.out.println("iv in byte" + Arrays.toString(sIV.getIV()));
         sessionHost=serverHost;
@@ -110,13 +109,10 @@ public class ServerHandshake {
         HandMessage.send(socket);
     }
     
-    public static String getTargetHost() {
-        return targetHost; 
-    }
+    public static String getTargetHost() { return targetHost; }
 
-    public static int getTargetPort() {
-        return targetPort; 
-    }
+    public static int getTargetPort() { return targetPort; }
+    
     public static SessionDecrypter getSessionDecrypter() { return SessionDecrypter; }
 
     public static SessionEncrypter getSessionEncrypter() { return SessionEncrypter; }

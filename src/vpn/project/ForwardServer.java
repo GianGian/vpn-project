@@ -43,7 +43,7 @@ public class ForwardServer
      */
     private void doHandshake(Socket handshakeSocket) throws UnknownHostException, IOException, Exception {
 
-        serverHandshake = new ServerHandshake(handshakeSocket);
+        serverHandshake = new ServerHandshake(handshakeSocket,arguments.get("usercert"));
         serverHandshake.VerifyClientHello(handshakeSocket,arguments.get("cacert"));
         serverHandshake.VerifyForward(handshakeSocket);
         serverHandshake.sessionSocket = new ServerSocket(0,13,InetAddress.getLocalHost());

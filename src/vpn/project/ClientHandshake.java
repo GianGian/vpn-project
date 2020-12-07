@@ -26,28 +26,26 @@ public class ClientHandshake {
      */
     
     /* Session host/port  */
-    //public static String sessionHost;
-    //public static int sessionPort;
-    //public static String ClientCertificate;
-    public static String sessionHost = "localhost";
-    public static int sessionPort=12345;
-    public static String ClientCertificate="client.pem";
+    public static String sessionHost;
+    public static int sessionPort;
+    public static String ClientCertificate;
+    //public static String sessionHost = "localhost";
+    //public static int sessionPort=12345;
+    //public static String ClientCertificate="client.pem";
 
     /* Security parameters key/iv should also go here. Fill in! */
     public static X509Certificate Servercertificate;
     public static SessionDecrypter SessionDecrypter;
     public static SessionEncrypter SessionEncrypter;
-    public static String SessionHost;
-    public static int SessionPort;
-
 
     /**
      * Run client handshake protocol on a handshake socket. 
      * Here, we do nothing, for now.
      */ 
-    public ClientHandshake(Socket handshakeSocket) throws IOException, CertificateException {
+    public ClientHandshake(Socket handshakeSocket, String user) throws IOException, CertificateException {
         HandshakeMessage HandMessage = new HandshakeMessage();
         HandMessage.putParameter("MessageType", "ClientHello");
+        String ClientCertificate = user;
         HandMessage.putParameter("Certificate", Base64.getEncoder().encodeToString(VerifyCertificate.getCertificate(ClientCertificate).getEncoded()));
         HandMessage.send(handshakeSocket);
     }
@@ -86,15 +84,14 @@ public class ClientHandshake {
         HandshakeMessage HandMessage = new HandshakeMessage();
         HandMessage.recv(socket);
         if(HandMessage.getParameter("MessageType").equals("Session")){
-            String sKey = HandMessage.getParameter("SessionKey");
-            String sIV = HandMessage.getParameter("SessionIV");
+            String Key = HandMessage.getParameter("SessionKey");
+            String IV = HandMessage.getParameter("SessionIV");
             sessionHost = HandMessage.getParameter("SessionHost");
             sessionPort = Integer.parseInt(HandMessage.getParameter("SessionPort"));
-            byte[] SessKeyDec = HandshakeCrypto.decrypt(Base64.getDecoder().decode(sKey),HandshakeCrypto.getPrivateKeyFromKeyFile(PrivKey));
-            byte[] SessIVDec = HandshakeCrypto.decrypt(Base64.getDecoder().decode(sIV),HandshakeCrypto.getPrivateKeyFromKeyFile(PrivKey));
-
-            SessionEncrypter = new SessionEncrypter(SessKeyDec, SessIVDec);
-            SessionDecrypter = new SessionDecrypter(SessKeyDec,SessIVDec);
+            byte[] SessKey = HandshakeCrypto.decrypt(Base64.getDecoder().decode(Key),HandshakeCrypto.getPrivateKeyFromKeyFile(PrivKey));
+            byte[] SessIV = HandshakeCrypto.decrypt(Base64.getDecoder().decode(IV),HandshakeCrypto.getPrivateKeyFromKeyFile(PrivKey));
+            SessionEncrypter = new SessionEncrypter(SessKey, SessIV);
+            SessionDecrypter = new SessionDecrypter(SessKey,SessIV);
             //System.out.println("chiave in byte"+ Arrays.toString(SessKeyDec));
             //System.out.println("IV in byte"+ Arrays.toString(SessIVDec));
         } else{
@@ -102,13 +99,9 @@ public class ClientHandshake {
         }
     }
     
-    public static String getSessionHost() { 
-        return sessionHost; 
-    }
+    public static String getSessionHost() { return sessionHost; }
 
-    public static int getSessionPort() { 
-        return sessionPort; 
-    }
+    public static int getSessionPort() { return sessionPort; }
     
     public static SessionDecrypter getSessionDecrypter() { return SessionDecrypter; }
 
