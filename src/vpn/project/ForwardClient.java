@@ -44,8 +44,6 @@ public class ForwardClient
 
     public static ClientHandshake clientHandshake;
     private static Arguments arguments;
-    //private static int sessionPort;
-    //private static String sessionHost;
 
     /**
      * Do handshake negotiation with server to authenticate and
@@ -58,10 +56,7 @@ public class ForwardClient
         clientHandshake.Forward(handshakeSocket,arguments.get("targethost"),arguments.get("targetport"));
         clientHandshake.VerifySession(handshakeSocket, arguments.get("key"));
         handshakeSocket.close();
-        System.out.println("handshake ok");
-        //clientHandshake.sessionHost = ClientHandshake.getSessionHost();
-        //clientHandshake.sessionPort = ClientHandshake.getSessionPort();
-        System.out.println("client test" +clientHandshake.sessionPort);
+        System.out.println("Handshake client ok");
     }
 
     /*
@@ -86,38 +81,26 @@ public class ForwardClient
         Socket handshakeSocket = new Socket(arguments.get("handshakehost"),
                                             Integer.parseInt(arguments.get("handshakeport")));
         doHandshake(handshakeSocket);
-
         /* 
          * Create a new listener socket for the proxy port. This is where
          * the user will connect.
          */
-        System.out.println("debug2");
-        //===
         ServerSocket proxySocket = new ServerSocket(Integer.parseInt(arguments.get("proxyport")));
-        //ServerSocket proxySocket = new ServerSocket();
-        //proxySocket.bind(null);
-        //===
-        System.out.println("debug2bis");
         /* 
          * Tell the user, so the user knows the we are listening at the 
          * proxy port.
          */ 
         tellUser(proxySocket);
-
         /*
          * Set up port forwarding between proxy port and session host/port
          * that was learned from the handshake. 
          */
-        System.out.println("ingrtesso thread" + proxySocket);
-        System.out.println("ingrtesso thread" + clientHandshake.sessionHost);
-        System.out.println("ingrtesso thread" + clientHandshake.sessionPort);
         ForwardServerClientThread forwardThread;
             forwardThread = new ForwardServerClientThread(true,proxySocket,
                                           clientHandshake.sessionHost, clientHandshake.sessionPort);
         /* 
          * Launch the fowarder 
          */
-        System.out.println(forwardThread.id);
         forwardThread.start();
     }
 

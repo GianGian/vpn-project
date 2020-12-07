@@ -39,8 +39,6 @@ public class ForwardServerClientThread extends Thread
     
     private SessionEncrypter SessEncrypt;
     private SessionDecrypter SessDecrypt;
-    private SessionEncrypter SessEncrypt1;
-    private SessionDecrypter SessDecrypt1;
     boolean id;
 
     /**
@@ -48,19 +46,19 @@ public class ForwardServerClientThread extends Thread
      * Wait for client to connect on client listening socket.
      * A server socket is created later by run() method.
      */
-    public ForwardServerClientThread(boolean id1, ServerSocket listensocket, String serverhost, int serverport) throws IOException
+    public ForwardServerClientThread(boolean id, ServerSocket listensocket, String serverhost, int serverport) throws IOException
     {
         mListenSocket = listensocket;
         mServerPort = serverport;
         mServerHost = serverhost;
-        if(id1){
+        if(id){
         this.SessEncrypt = ClientHandshake.getSessionEncrypter();
         this.SessDecrypt = ClientHandshake.getSessionDecrypter();
         }else{
         this.SessEncrypt = ServerHandshake.getSessionEncrypter();
         this.SessDecrypt = ServerHandshake.getSessionDecrypter();
         }
-        id=id1;
+        this.id=id;
     }
 
     public ServerSocket getListenSocket() {
@@ -80,9 +78,6 @@ public class ForwardServerClientThread extends Thread
         try {
  
             // Wait for incoming connection on listen socket
-            //System.out.println("server" + mServerPort);
-           // System.out.println("server" + mServerHost);
-           // System.out.println("server" + mListenSocket);
             mClientSocket = mListenSocket.accept();
             mClientHostPort = mClientSocket.getInetAddress().getHostName() + ":" + mClientSocket.getPort();
             Logger.log("Accepted from " + mClientHostPort + " on " + mListenSocket.getLocalPort());
@@ -102,27 +97,13 @@ public class ForwardServerClientThread extends Thread
             OutputStream clientOut = mClientSocket.getOutputStream();
             InputStream serverIn = mServerSocket.getInputStream();
             OutputStream serverOut = mServerSocket.getOutputStream();
-            
-           
-          
-            //System.out.println("crypto" + getListenSocket());   
-            System.out.println("aaa"+this.id);
+              
             if(id){ 
-                System.out.println("bbb");
-               // if(SessEncrypt != null) {
-                    serverOut = SessEncrypt.openCipherOutputStream(serverOut);
-                //}
-                //if(SessDecrypt != null) {
-                    serverIn = SessDecrypt.openCipherInputStream(serverIn);
-                //}
+                serverOut = SessEncrypt.openCipherOutputStream(serverOut);
+                serverIn = SessDecrypt.openCipherInputStream(serverIn);
             } else {
-                System.out.println("ccc");
-               // if(SessEncrypt != null) {
-                    clientOut = SessEncrypt.openCipherOutputStream(clientOut);
-                //}
-                //if(SessDecrypt != null) {
-                    clientIn = SessDecrypt.openCipherInputStream(clientIn);
-                //}
+                clientOut = SessEncrypt.openCipherOutputStream(clientOut);
+                clientIn = SessDecrypt.openCipherInputStream(clientIn);
             }
          
             mServerHostPort = mServerHost + ":" + mServerPort;

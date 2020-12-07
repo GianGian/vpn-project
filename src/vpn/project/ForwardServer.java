@@ -46,19 +46,12 @@ public class ForwardServer
         serverHandshake = new ServerHandshake(handshakeSocket);
         serverHandshake.VerifyClientHello(handshakeSocket,arguments.get("cacert"));
         serverHandshake.VerifyForward(handshakeSocket);
-        //handshakeListenSocket = new ServerSocket(0,13,InetAddress.getLocalHost());
-        //serverHandshake.Session(handshakeSocket, InetAddress.getLocalHost().getHostAddress(), Integer.toString(handshakeListenSocket.getLocalPort()));
-        System.out.println("sessionsocketbefore" + serverHandshake.sessionSocket);
         serverHandshake.sessionSocket = new ServerSocket(0,13,InetAddress.getLocalHost());
-        System.out.println("sessionsocketafter" + serverHandshake.sessionSocket);
         serverHandshake.Session(handshakeSocket, InetAddress.getLocalHost().getHostAddress(), Integer.toString(serverHandshake.sessionSocket.getLocalPort()));
-        
-        //==
         handshakeSocket.close();
-        System.out.println("handshake ok");
+        System.out.println("Handshake server ok");
         serverHandshake.targetHost=ServerHandshake.getTargetHost();
         serverHandshake.targetPort=ServerHandshake.getTargetPort(); 
-        System.out.println("debug");
     }
 
     /**
@@ -99,7 +92,6 @@ public class ForwardServer
             ForwardServerClientThread forwardThread;
             forwardThread = new ForwardServerClientThread(false,serverHandshake.sessionSocket,
                                                           serverHandshake.targetHost, serverHandshake.targetPort);
-            //System.out.println("debugbis" + serverHandshake.targetPort);
             forwardThread.start();
         }
     }

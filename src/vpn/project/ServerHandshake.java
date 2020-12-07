@@ -49,9 +49,6 @@ public class ServerHandshake {
      * with a preassigned port number for the session.
      */ 
     public ServerHandshake(Socket handshakeSocket) throws IOException, CertificateException {
-        //sessionSocket = new ServerSocket(12345);
-        //sessionHost = sessionSocket.getInetAddress().getHostName();
-        //sessionPort = sessionSocket.getLocalPort();
         HandshakeMessage HandMessage = new HandshakeMessage();
         HandMessage.putParameter("MessageType", "ServerHello");
         HandMessage.putParameter("Certificate", Base64.getEncoder().encodeToString(VerifyCertificate.getCertificate(ServerCertificate).getEncoded()));
@@ -104,13 +101,10 @@ public class ServerHandshake {
 
         SessionEncrypter = new SessionEncrypter(Skey.getKeyBytes(), sIV.getIV());
         SessionDecrypter = new SessionDecrypter(Skey.getKeyBytes(), sIV.getIV());
-         System.out.println("chiave in byte" + Arrays.toString(Skey.getKeyBytes()));
-         System.out.println("iv in byte" + Arrays.toString(sIV.getIV()));
-         //System.out.println(Base64.getEncoder().encodeToString(sIV.getIV()));
-        ////System.out.println("sessionport and session host"+ serverHost + server);
+        //System.out.println("chiave in byte" + Arrays.toString(Skey.getKeyBytes()));
+        //System.out.println("iv in byte" + Arrays.toString(sIV.getIV()));
         sessionHost=serverHost;
         sessionPort=Integer.parseInt(serverPort);
-        System.out.println("sessionport and session host"+ serverHost + serverPort);
         HandMessage.putParameter("SessionHost", serverHost);
         HandMessage.putParameter("SessionPort", serverPort);
         HandMessage.send(socket);
@@ -123,7 +117,7 @@ public class ServerHandshake {
     public static int getTargetPort() {
         return targetPort; 
     }
-     public static SessionDecrypter getSessionDecrypter() { return SessionDecrypter; }
+    public static SessionDecrypter getSessionDecrypter() { return SessionDecrypter; }
 
     public static SessionEncrypter getSessionEncrypter() { return SessionEncrypter; }
 }

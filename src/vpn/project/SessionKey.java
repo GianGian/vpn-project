@@ -26,19 +26,4 @@ public class SessionKey{
     byte[] getKeyBytes(){
         return this.secretKey.getEncoded();
     }
-
-
-/*public static void main(String[] args) throws NoSuchAlgorithmException {
-        // TODO code application logic here
-        SessionKey key1 = new SessionKey(128);
-        //System.out.print((Arrays.toString(key1.getKeyBytes())));
-        
-        SessionKey key3 = new SessionKey(128);
-            byte[] stream3 = key3.getKeyBytes();
-            for(int i = 0; i < stream3.length; i ++)
-            {
-                System.out.print(Integer.toString(stream3[i],2));
-                System.out.print(" ");
-            }
-    } */
 }
