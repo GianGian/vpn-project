@@ -64,6 +64,27 @@ public class ServerHandshake {
             if(HandMessage.getParameter("MessageType").equals("ClientHello")) {
                 String UserCert = HandMessage.getParameter("Certificate");
                 Clientcertificate = VerifyCertificate.createCertificate(UserCert);
+                
+                X509Certificate CA1= VerifyCertificate.getCertificate(CA);
+            if(CA1.getSubjectDN().toString().contains("CN=ca-pf.ik2206.kth.se") && CA1.getSubjectDN().toString().contains("EMAILADDRESS=giamos@kth.se")){
+                System.out.println("CA CN and mail OK");
+                System.out.println(CA1.getSubjectDN().toString());
+            }else{
+                socket.close();
+                System.out.println("CA CN and/or mail KO");
+                System.out.println(CA1.getSubjectDN().toString());
+            }
+            
+            if(Clientcertificate.getSubjectDN().toString().contains("CN=client-pf.ik2206.kth.se") && Clientcertificate.getSubjectDN().toString().contains("EMAILADDRESS=giamos@kth.se")){
+                System.out.println("SERVER CN and mail OK");
+                System.out.println(Clientcertificate.getSubjectDN().toString());
+            }else{
+                socket.close();
+                System.out.println("SERVER CN and/or mail KO");
+                System.out.println(Clientcertificate.getSubjectDN().toString());
+            }
+            
+            
                 try{
                     VerifyCertificate.getVerify(VerifyCertificate.getCertificate(CA),Clientcertificate);
                     Logger.log("Success Client Certificate Verification");

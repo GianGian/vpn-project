@@ -18,6 +18,7 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
+import javax.naming.InvalidNameException;
 
 public class ClientHandshake {
     /*
@@ -45,18 +46,38 @@ public class ClientHandshake {
     public ClientHandshake(Socket handshakeSocket, String user) throws IOException, CertificateException {
         HandshakeMessage HandMessage = new HandshakeMessage();
         HandMessage.putParameter("MessageType", "ClientHello");
-        String ClientCertificate = user;
+        ClientCertificate = user;
         HandMessage.putParameter("Certificate", Base64.getEncoder().encodeToString(VerifyCertificate.getCertificate(ClientCertificate).getEncoded()));
         HandMessage.send(handshakeSocket);
     }
     
-    public static void VerifyServerHello(Socket socket, String CA) throws IOException, CertificateException, NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException {
+    public static void VerifyServerHello(Socket socket, String CA) throws IOException, CertificateException, NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException, InvalidNameException {
         HandshakeMessage HandMessage = new HandshakeMessage();
         HandMessage.recv(socket);
         if(HandMessage.getParameter("MessageType").equals("ServerHello")) {
             Logger.log("ServerHello phase running");
             String cCert = HandMessage.getParameter("Certificate");
             Servercertificate = VerifyCertificate.createCertificate(cCert);
+            
+            X509Certificate CA1= VerifyCertificate.getCertificate(CA);
+            if(CA1.getSubjectDN().toString().contains("CN=ca-pf.ik2206.kth.se") && CA1.getSubjectDN().toString().contains("EMAILADDRESS=giamos@kth.se")){
+                System.out.println("CA CN and mail OK");
+                System.out.println(CA1.getSubjectDN().toString());
+            }else{
+                socket.close();
+                System.out.println("CA CN and/or mail KO");
+                System.out.println(CA1.getSubjectDN().toString());
+            }
+            
+            if(Servercertificate.getSubjectDN().toString().contains("CN=server-pf.ik2206.kth.se") && Servercertificate.getSubjectDN().toString().contains("EMAILADDRESS=giamos@kth.se")){
+                System.out.println("SERVER CN and mail OK");
+                System.out.println(Servercertificate.getSubjectDN().toString());
+            }else{
+                socket.close();
+                System.out.println("SERVER CN and/or mail KO");
+                System.out.println(Servercertificate.getSubjectDN().toString());
+            }
+            
             try{
                 VerifyCertificate.getVerify(VerifyCertificate.getCertificate(CA),Servercertificate);
                 Logger.log("Success Server Certificate Verification");
@@ -92,8 +113,8 @@ public class ClientHandshake {
             byte[] SessIV = HandshakeCrypto.decrypt(Base64.getDecoder().decode(IV),HandshakeCrypto.getPrivateKeyFromKeyFile(PrivKey));
             SessionEncrypter = new SessionEncrypter(SessKey, SessIV);
             SessionDecrypter = new SessionDecrypter(SessKey,SessIV);
-            //System.out.println("chiave in byte"+ Arrays.toString(SessKeyDec));
-            //System.out.println("IV in byte"+ Arrays.toString(SessIVDec));
+            //System.out.println("chiave in byte"+ Arrays.toString(SessKey));
+            //System.out.println("IV in byte"+ Arrays.toString(SessIV));
         } else{
             socket.close();
         }

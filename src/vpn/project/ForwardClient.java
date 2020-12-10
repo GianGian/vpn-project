@@ -14,6 +14,7 @@
  */
 
  
+import java.io.File;
 import java.lang.AssertionError;
 import java.lang.IllegalArgumentException;
 import java.lang.Integer;
@@ -34,6 +35,7 @@ import java.security.spec.InvalidKeySpecException;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import javax.naming.InvalidNameException;
  
 public class ForwardClient
 {
@@ -50,14 +52,26 @@ public class ForwardClient
      * learn parameters: session port, host, key, and IV
      */
 
-    private static void doHandshake(Socket handshakeSocket) throws IOException, CertificateException, NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException, InvalidKeySpecException, IllegalBlockSizeException, NoSuchPaddingException, BadPaddingException, InvalidAlgorithmParameterException {
+    private static void doHandshake(Socket handshakeSocket) throws IOException, CertificateException, NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException, InvalidKeySpecException, IllegalBlockSizeException, NoSuchPaddingException, BadPaddingException, InvalidAlgorithmParameterException, InvalidNameException {
+        //check controlli
+        /*try{
+            if(Integer.parseInt(arguments.get("targetport"))>65535){
+                throw new IllegalArgumentException();
+            }
+        }
+            
+        catch(Exception E){
+                System.out.println("errore parametri ingresso");
+            handshakeSocket.close();
+                }
+        //===  */ 
         clientHandshake = new ClientHandshake(handshakeSocket,arguments.get("usercert"));
         clientHandshake.VerifyServerHello(handshakeSocket,arguments.get("cacert"));
         clientHandshake.Forward(handshakeSocket,arguments.get("targethost"),arguments.get("targetport"));
         clientHandshake.VerifySession(handshakeSocket, arguments.get("key"));
         handshakeSocket.close();
         System.out.println("Handshake client ok");
-    }
+        }
 
     /*
      * Let user know that we are waiting
@@ -73,11 +87,11 @@ public class ForwardClient
      * Run handshake negotiation, then set up a listening socket 
      * and start port forwarder thread.
      */
-    static public void startForwardClient() throws IOException, CertificateException, NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException, InvalidKeySpecException, IllegalBlockSizeException, NoSuchPaddingException, BadPaddingException, InvalidAlgorithmParameterException {
+    static public void startForwardClient() throws IOException, CertificateException, NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException, InvalidKeySpecException, IllegalBlockSizeException, NoSuchPaddingException, BadPaddingException, InvalidAlgorithmParameterException, InvalidNameException {
 
         /*
          * First, run the handshake protocol to learn session parameters.
-         */
+         */       
         Socket handshakeSocket = new Socket(arguments.get("handshakehost"),
                                             Integer.parseInt(arguments.get("handshakeport")));
         doHandshake(handshakeSocket);
@@ -133,7 +147,7 @@ public class ForwardClient
      * Program entry point. Reads arguments and run
      * the forward server
      */
-    public static void main(String[] args) throws CertificateException, NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException, InvalidKeySpecException, IllegalBlockSizeException, NoSuchPaddingException, BadPaddingException, InvalidAlgorithmParameterException
+    public static void main(String[] args) throws CertificateException, NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException, InvalidKeySpecException, IllegalBlockSizeException, NoSuchPaddingException, BadPaddingException, InvalidAlgorithmParameterException, InvalidNameException
     {
         try {
             arguments = new Arguments();
@@ -145,6 +159,21 @@ public class ForwardClient
             }
             if (arguments.get("proxyport") == null) {
                 throw new IllegalArgumentException("Proxy port not specified");
+            }
+            if(Integer.parseInt(arguments.get("targetport"))>65535 || Integer.parseInt(arguments.get("proxyport"))>65535 || Integer.parseInt(arguments.get("handshakeport"))>65535 || Integer.parseInt(arguments.get("targetport"))<0 || Integer.parseInt(arguments.get("proxyport"))<0 || Integer.parseInt(arguments.get("handshakeport"))<0){
+                throw new IllegalArgumentException("one or more parameter(s) of the ports are wrong");
+            }
+            File f =new File(arguments.get("usercert"));
+            if (!f.exists()) {
+                throw new InvalidNameException("User certificate does not exist");
+            }
+            File g =new File(arguments.get("cacert"));
+            if (!g.exists()) {
+                throw new InvalidNameException("CA certificate does not exist");
+            }
+            File h =new File(arguments.get("key"));
+            if (!h.exists()) {
+                throw new InvalidNameException("User key does not exist");
             }
 
         } catch(IllegalArgumentException ex) {

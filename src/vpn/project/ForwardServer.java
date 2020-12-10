@@ -13,6 +13,7 @@
  * (c) 2001 by Svetlin Nakov - http://www.nakov.com
  */
  
+import java.io.File;
 import java.lang.AssertionError;
 import java.lang.Integer;
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ import java.io.IOException;
 import java.io.FileInputStream;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import javax.naming.InvalidNameException;
  
 public class ForwardServer
 {
@@ -61,7 +63,7 @@ public class ForwardServer
     //throws IOException
         throws Exception
     {
- 
+
         // Bind server on given TCP port
         int port = Integer.parseInt(arguments.get("handshakeport"));
         //ServerSocket handshakeListenSocket;
@@ -129,6 +131,21 @@ public class ForwardServer
         arguments.setDefault("handshakeport", Integer.toString(DEFAULTHANDSHAKEPORT));
         arguments.setDefault("handshakehost", DEFAULTHANDSHAKEHOST);
         arguments.loadArguments(args);
+        if(Integer.parseInt(arguments.get("handshakeport"))>65535 || Integer.parseInt(arguments.get("handshakeport"))<0 ){
+                throw new IllegalArgumentException("handshakeport is wrong");
+            }
+            File f =new File(arguments.get("usercert"));
+            if (!f.exists()) {
+                throw new InvalidNameException("User certificate does not exist");
+            }
+            File g =new File(arguments.get("cacert"));
+            if (!g.exists()) {
+                throw new InvalidNameException("CA certificate does not exist");
+            }
+            File h =new File(arguments.get("key"));
+            if (!h.exists()) {
+                throw new InvalidNameException("User key does not exist");
+            }
         
         ForwardServer srv = new ForwardServer();
         srv.startForwardServer();
