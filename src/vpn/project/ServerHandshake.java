@@ -66,7 +66,7 @@ public class ServerHandshake {
                 Clientcertificate = VerifyCertificate.createCertificate(UserCert);
                 
                 X509Certificate CA1= VerifyCertificate.getCertificate(CA);
-            if(CA1.getSubjectDN().toString().contains("CN=ca-pf.ik2206.kth.se") && CA1.getSubjectDN().toString().contains("EMAILADDRESS=giamos@kth.se")){
+            if(CA1.getSubjectDN().toString().contains("CN=ca-pf.ik2206.kth.se") && CA1.getSubjectDN().toString().contains("@kth.se")){
                 System.out.println("CA CN and mail OK");
                 System.out.println(CA1.getSubjectDN().toString());
             }else{
@@ -75,7 +75,7 @@ public class ServerHandshake {
                 System.out.println(CA1.getSubjectDN().toString());
             }
             
-            if(Clientcertificate.getSubjectDN().toString().contains("CN=client-pf.ik2206.kth.se") && Clientcertificate.getSubjectDN().toString().contains("EMAILADDRESS=giamos@kth.se")){
+            if(Clientcertificate.getSubjectDN().toString().contains("CN=client-pf.ik2206.kth.se") && Clientcertificate.getSubjectDN().toString().contains("@kth.se")){
                 System.out.println("SERVER CN and mail OK");
                 System.out.println(Clientcertificate.getSubjectDN().toString());
             }else{
