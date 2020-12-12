@@ -1,3 +1,4 @@
+
 import javax.crypto.*;
 import java.io.*;
 import java.security.NoSuchAlgorithmException;
@@ -8,27 +9,27 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 public class SessionDecrypter {
+
     private byte[] KeyBytes;
     private byte[] IVBytes;
     private Cipher cipher;
 
-    public SessionDecrypter(byte[] keybytes, byte[] ivbytes)throws NoSuchAlgorithmException,NoSuchPaddingException,InvalidKeyException,InvalidAlgorithmParameterException{
-        this.KeyBytes=keybytes;
-        this.IVBytes=ivbytes;
+    public SessionDecrypter(byte[] keybytes, byte[] ivbytes) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException {
+        this.KeyBytes = keybytes;
+        this.IVBytes = ivbytes;
         this.cipher = Cipher.getInstance("AES/CTR/NOPadding");
         IvParameterSpec ivspec = new IvParameterSpec(ivbytes);
-        SecretKey myKey= new SecretKeySpec(keybytes,"AES"); 
+        SecretKey myKey = new SecretKeySpec(keybytes, "AES");
         this.cipher.init(Cipher.DECRYPT_MODE, myKey, ivspec);
     }
-    
-    public CipherInputStream openCipherInputStream(InputStream input){
+
+    public CipherInputStream openCipherInputStream(InputStream input) {
         CipherInputStream cipherinput = new CipherInputStream(input, this.cipher);
         return cipherinput;
     }
-    
+
     public static void main(String[] args) {
         // TODO code application logic here
     }
-    
-}  
-    
+
+}

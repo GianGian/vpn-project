@@ -1,3 +1,4 @@
+
 /**
  * ForwardServerClientThread handles the clients of Nakov Forward Server. It
  * connects two sockets and starts the TCP forwarding between given client
@@ -13,7 +14,6 @@
  *
  * Peter Sjodin, KTH
  */
-
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.ServerSocket;
@@ -21,12 +21,12 @@ import java.net.SocketException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
- 
+
 import javax.crypto.CipherOutputStream;
 import javax.crypto.CipherInputStream;
 
-public class ForwardServerClientThread extends Thread
-{
+public class ForwardServerClientThread extends Thread {
+
     private ForwardClient mForwardClient = null;
     private Socket mClientSocket = null;
     private Socket mServerSocket = null;
@@ -36,29 +36,28 @@ public class ForwardServerClientThread extends Thread
     private String mServerHostPort;
     private int mServerPort;
     private String mServerHost;
-    
+
     private SessionEncrypter SessEncrypt;
     private SessionDecrypter SessDecrypt;
     boolean id;
 
     /**
-     * Creates a client thread for handling clients of NakovForwardServer.
-     * Wait for client to connect on client listening socket.
-     * A server socket is created later by run() method.
+     * Creates a client thread for handling clients of NakovForwardServer. Wait
+     * for client to connect on client listening socket. A server socket is
+     * created later by run() method.
      */
-    public ForwardServerClientThread(boolean id, ServerSocket listensocket, String serverhost, int serverport) throws IOException
-    {
+    public ForwardServerClientThread(boolean id, ServerSocket listensocket, String serverhost, int serverport) throws IOException {
         mListenSocket = listensocket;
         mServerPort = serverport;
         mServerHost = serverhost;
-        if(id){
-        this.SessEncrypt = ClientHandshake.getSessionEncrypter();
-        this.SessDecrypt = ClientHandshake.getSessionDecrypter();
-        }else{
-        this.SessEncrypt = ServerHandshake.getSessionEncrypter();
-        this.SessDecrypt = ServerHandshake.getSessionDecrypter();
+        if (id) {
+            this.SessEncrypt = ClientHandshake.getSessionEncrypter();
+            this.SessDecrypt = ClientHandshake.getSessionDecrypter();
+        } else {
+            this.SessEncrypt = ServerHandshake.getSessionEncrypter();
+            this.SessDecrypt = ServerHandshake.getSessionDecrypter();
         }
-        this.id=id;
+        this.id = id;
     }
 
     public ServerSocket getListenSocket() {
@@ -66,30 +65,29 @@ public class ForwardServerClientThread extends Thread
     }
 
     /**
-     * Obtains a socket for destination server.
-     * First waits for incoming connection on the listen socket.
-     * Starts two threads for forwarding : "client in <--> dest server out" and
-     * "dest server in <--> client out", waits until one of these threads stop
-     * due to read/write failure or connection closure. Closes opened connections.
-     * 
+     * Obtains a socket for destination server. First waits for incoming
+     * connection on the listen socket. Starts two threads for forwarding :
+     * "client in <--> dest server out" and "dest server in <--> client out",
+     * waits until one of these threads stop due to read/write failure or
+     * connection closure. Closes opened connections.
+     *
      */
-    public void run()
-    {
+    public void run() {
         try {
- 
+
             // Wait for incoming connection on listen socket
             mClientSocket = mListenSocket.accept();
             mClientHostPort = mClientSocket.getInetAddress().getHostName() + ":" + mClientSocket.getPort();
             Logger.log("Accepted from " + mClientHostPort + " on " + mListenSocket.getLocalPort());
-               
+
             try {
                 mServerSocket = new Socket(mServerHost, mServerPort);
                 System.out.println(mServerSocket);
             } catch (Exception e) {
                 System.out.println("Connection failed to " + mServerHost + ":" + mServerPort);
-                e.printStackTrace(); 
+                e.printStackTrace();
                 // Prints what exception has been thrown 
-                System.out.println(e); 
+                System.out.println(e);
             }
 
             // Obtain input and output streams of server and client
@@ -97,49 +95,54 @@ public class ForwardServerClientThread extends Thread
             OutputStream clientOut = mClientSocket.getOutputStream();
             InputStream serverIn = mServerSocket.getInputStream();
             OutputStream serverOut = mServerSocket.getOutputStream();
-              
-            if(id){ 
+
+            if (id) {
                 serverOut = SessEncrypt.openCipherOutputStream(serverOut);
                 serverIn = SessDecrypt.openCipherInputStream(serverIn);
             } else {
                 clientOut = SessEncrypt.openCipherOutputStream(clientOut);
                 clientIn = SessDecrypt.openCipherInputStream(clientIn);
             }
-         
+
             mServerHostPort = mServerHost + ":" + mServerPort;
             Logger.log("TCP Forwarding  " + mClientHostPort + " <--> " + mServerHostPort + "  started.");
- 
+
             // Start forwarding of socket data between server and client
             ForwardThread clientForward = new ForwardThread(this, clientIn, serverOut);
             ForwardThread serverForward = new ForwardThread(this, serverIn, clientOut);
             mBothConnectionsAreAlive = true;
             clientForward.start();
             serverForward.start();
- 
+
         } catch (IOException ioe) {
-           ioe.printStackTrace();
+            ioe.printStackTrace();
         }
     }
- 
+
     /**
      * connectionBroken() method is called by forwarding child threads to notify
-     * this thread (their parent thread) that one of the connections (server or client)
-     * is broken (a read/write failure occured). This method disconnects both server
-     * and client sockets causing both threads to stop forwarding.
+     * this thread (their parent thread) that one of the connections (server or
+     * client) is broken (a read/write failure occured). This method disconnects
+     * both server and client sockets causing both threads to stop forwarding.
      */
-    public synchronized void connectionBroken()
-    {
+    public synchronized void connectionBroken() {
         if (mBothConnectionsAreAlive) {
-           // One of the connections is broken. Close the other connection and stop forwarding
-           // Closing these socket connections will close their input/output streams
-           // and that way will stop the threads that read from these streams
-           try { mServerSocket.close(); } catch (IOException e) {}
-           try { mClientSocket.close(); } catch (IOException e) {}
- 
-           mBothConnectionsAreAlive = false;
- 
-           Logger.log("TCP Forwarding  " + mClientHostPort + " <--> " + mServerHostPort + "  stopped.");
+            // One of the connections is broken. Close the other connection and stop forwarding
+            // Closing these socket connections will close their input/output streams
+            // and that way will stop the threads that read from these streams
+            try {
+                mServerSocket.close();
+            } catch (IOException e) {
+            }
+            try {
+                mClientSocket.close();
+            } catch (IOException e) {
+            }
+
+            mBothConnectionsAreAlive = false;
+
+            Logger.log("TCP Forwarding  " + mClientHostPort + " <--> " + mServerHostPort + "  stopped.");
         }
     }
- 
+
 }

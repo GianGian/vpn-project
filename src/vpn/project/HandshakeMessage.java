@@ -18,9 +18,8 @@ import java.util.Properties;
  * A Handshake message is represented as a set of parameters -- <key, value> pairs.
  * Extends Properties class.
  */
-
 public class HandshakeMessage extends Properties {
-    
+
     /*
      * Get the value of a parameter 
      */
@@ -47,14 +46,14 @@ public class HandshakeMessage extends Properties {
      */
     public void send(Socket socket) throws IOException {
         ByteArrayOutputStream byteOutputStream = new ByteArrayOutputStream();
-        String comment = "From " + InetAddress.getLocalHost() + ":" + socket.getLocalPort() +
-            " to " + socket.getInetAddress().getHostAddress() + ":" + socket.getPort();
+        String comment = "From " + InetAddress.getLocalHost() + ":" + socket.getLocalPort()
+                + " to " + socket.getInetAddress().getHostAddress() + ":" + socket.getPort();
         this.storeToXML(byteOutputStream, comment);
         byte[] bytes = byteOutputStream.toByteArray();
-        socket.getOutputStream().write(String.format("%d ", bytes.length).getBytes(StandardCharsets.UTF_8));        
+        socket.getOutputStream().write(String.format("%d ", bytes.length).getBytes(StandardCharsets.UTF_8));
         socket.getOutputStream().write(bytes);
         socket.getOutputStream().flush();
-        
+
     }
 
     /*
@@ -67,12 +66,12 @@ public class HandshakeMessage extends Properties {
     public void recv(Socket socket) throws IOException {
         int length = 0;
         for (int n = socket.getInputStream().read(); !Character.isWhitespace(n); n = socket.getInputStream().read()) {
-            length = length*10 + Character.getNumericValue(n);
+            length = length * 10 + Character.getNumericValue(n);
         }
         byte[] data = new byte[length];
         int nread = 0;
         while (nread < length) {
-            nread += socket.getInputStream().read(data, nread, length-nread);
+            nread += socket.getInputStream().read(data, nread, length - nread);
         }
         this.loadFromXML(new ByteArrayInputStream(data));
     }
