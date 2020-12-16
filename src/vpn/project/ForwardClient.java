@@ -51,18 +51,7 @@ public class ForwardClient {
      * parameters: session port, host, key, and IV
      */
     private static void doHandshake(Socket handshakeSocket) throws IOException, CertificateException, NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException, InvalidKeySpecException, IllegalBlockSizeException, NoSuchPaddingException, BadPaddingException, InvalidAlgorithmParameterException, InvalidNameException {
-        //check controlli
-        /*try{
-            if(Integer.parseInt(arguments.get("targetport"))>65535){
-                throw new IllegalArgumentException();
-            }
-        }
-            
-        catch(Exception E){
-                System.out.println("errore parametri ingresso");
-            handshakeSocket.close();
-                }
-        //===  */
+        
         clientHandshake = new ClientHandshake(handshakeSocket, arguments.get("usercert"));
         clientHandshake.VerifyServerHello(handshakeSocket, arguments.get("cacert"));
         clientHandshake.Forward(handshakeSocket, arguments.get("targethost"), arguments.get("targetport"));

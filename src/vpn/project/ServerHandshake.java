@@ -57,7 +57,7 @@ public class ServerHandshake {
     public ServerHandshake(Socket handshakeSocket, String user) throws IOException, CertificateException {
         HandshakeMessage HandMessage = new HandshakeMessage();
         HandMessage.putParameter("MessageType", "ServerHello");
-        String ServerCertificate = user;
+        ServerCertificate = user;
         HandMessage.putParameter("Certificate", Base64.getEncoder().encodeToString(VerifyCertificate.getCertificate(ServerCertificate).getEncoded()));
         HandMessage.send(handshakeSocket);
     }
